@@ -100,4 +100,4 @@ passwordHashingSalt.isFirst=true
 
 After having copied this configuration into the +fileAuthConfiguration.properties+, the credential file has to be improved, too. Now as hashing and salting is enabled the passwords have to be stored in same format.
 
-This can be done easily with our provided utility. For more information see the https://github.com/hivemq/file_auth_plugin_utility[GitHub repo].
+This can be done easily with our provided utility. For more information see the https://github.com/hivemq/file-auth-plugin-utility[GitHub repo].
