@@ -1,0 +1,103 @@
+:hivemq-blog-tools: http://www.hivemq.com/overview-of-mqtt-client-tools/
+
+= File Authentication Plugin
+
+== Description
+
+The File Authentication Plugin is the first plugin, which adds the capability of client authentication to HiveMQ. In the case of this plugin the credentials consist of username and password and are read from a file.
+
+== How to use the plugin with sample configuration
+
+. Copy the jar file to your +<HIVEMQ_HOME>/plugins+ folder
+. Copy configuration files
+..  +sample-configuration/fileAuthConfiguration.properites+ into your +<HIVEMQ_HOME>/plugins+ folder
+..  +sample-configuration/credentials.properites+ into your +<HIVEMQ_HOME>/plugins+ folder
+. Run HiveMQ
+. Connect with a {hivemq-blog-tools}[MQTT client] of your choice using username: +hivemq-user1+ and password: +user1+
+. Done!
+
+
+
+NOTE: This sample installation shows a simple and quick way to get started with the plugin. Therefore the pre-configuration uses no hashing for the passwords and has predefined username/password combinations. If you are using this plugin in production a more secure setup is essential. The various configuration options are explained in the following.
+
+== Configuration Options
+
+The plugin can be configured with the +fileAuthConfiguration.properties+ file, which needs to be placed in the plugin folder next to the jar file.
+
+[cols="1m,1,2" options="header"]
+.Configuration Options 
+|===
+|Name
+|Default
+|Description
+
+
+|filename
+|credentials.properties
+|This property specifies the name of the file, which contains the credentials of the users. Please notice that the file has to be in the plugins folder.
+
+|reloadCredentialsInterval.seconds
+|10
+|Returns the interval after which the credentials file is checked, if new credentials were added.
+
+
+|passwordHashing.enabled
+|false
+|Specifies if the password is stored in plaintext or as hash. If this is set to false all other configuration properties except +filename+ and +reloadCredentialsInterval.seconds+ are ignored.
+
+
+|passwordHashing.algorithm
+|SHA-512
+|Here the hashing algorithm used during the creation of the passwords can be declared. HiveMQ is supporting all hashing algorithms provided by the Java Virtual Maschine (MD2, MD5, SHA, SHA-256, SHA-384, SHA-512). Recommended for use is SHA-256 and above, because the others are not considered secure.
+
+
+|passwordHashing.iterations
+|1000000
+|Customizes the number of hashing iterations used.
+
+
+|passwordHashingSalt.enabled
+|true
+|Configures if a salt has been used during the hash generation. If this is set to false the following options are ignored.
+
+
+|passwordHashingSalt.separationChar
+|$
+|Defines the character used in the credential file to separate the salt from the hash.
+
+
+|passwordHashingSalt.isFirst
+|true
+|Specifies the order of hash and salt. If this is set to true, the salt is in front of the hash (salt$hash), if this option is false the salt is placed after the hash (hash$salt)
+
+|===
+
+== Credentials
+
+The second file needed for the plugin to work successfully is the credentials file, which is a Java Property File. So in each line one username/password combination can be specified. Depending on the configuration options a line looks like one of the following:
+
+* username:plaintextpassword
+* username:hashedpassword
+* username:hashedpassword[separator][salt]
+* username:[salt][separator]hashedpassword
+
+NOTE: It is not possible to specify different formats for passwords of different users in one file, therefore all lines must contain the same format.
+
+== Production-ready Configuration
+
+The displayed configuration shows a production-ready implementation, which uses SHA 512, 1 million iterations and salting.
+[source,xml]
+.Using strong hashing parameters
+----
+passwordHashing.enabled=true
+passwordHashing.algorithm=SHA-512
+passwordHashing.iterations=1000000
+passwordHashingSalt.enabled=true
+passwordHashingSalt.isFirst=true
+----
+
+== Create and Modify the credential file
+
+After having copied this configuration into the +fileAuthConfiguration.properties+, the credential file has to be improved, too. Now as hashing and salting is enabled the passwords have to be stored in same format.
+
+This can be done easily with our provided utility. For more information see the https://github.com/hivemq/file_auth_plugin_utility[GitHub repo].
