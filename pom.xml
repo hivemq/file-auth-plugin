@@ -242,7 +242,7 @@
                                 </goals>
                                 <configuration>
                                     <hiveMQDir>
-                                        /Applications/hivemq-3
+                                        FIXME, insert your HiveMQ directory here!
                                     </hiveMQDir>
                                     <debugMode>SERVER</debugMode>
                                 </configuration>
