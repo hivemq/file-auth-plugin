@@ -14,10 +14,10 @@
  *  limitations under the License.
  */
 
-package com.dcsquare.hivemq.plugin.fileauthentication.util;
+package com.hivemq.plugin.fileauthentication.util;
 
-import com.dcsquare.hivemq.plugin.fileauthentication.authentication.HashedSaltedPassword;
-import com.dcsquare.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
+import com.hivemq.plugin.fileauthentication.authentication.HashedSaltedPassword;
+import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
 import com.google.common.base.Charsets;
 import org.bouncycastle.util.encoders.Base64;
 

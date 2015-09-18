@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 dc-square GmbH
+ * Copyright 2015 dc-square GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,19 @@
  *  limitations under the License.
  */
 
-package com.dcsquare.hivemq.plugin.fileauthentication.authentication;
+package com.hivemq.plugin.fileauthentication.authentication;
 
-import com.dcsquare.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
-import com.dcsquare.hivemq.plugin.fileauthentication.util.HashSaltUtil;
-import com.dcsquare.hivemq.spi.aop.cache.Cached;
-import com.dcsquare.hivemq.spi.callback.CallbackPriority;
-import com.dcsquare.hivemq.spi.callback.exception.AuthenticationException;
-import com.dcsquare.hivemq.spi.callback.security.OnAuthenticationCallback;
-import com.dcsquare.hivemq.spi.security.ClientCredentialsData;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import org.apache.commons.configuration.Configuration;
+import com.hivemq.plugin.fileauthentication.configuration.Configuration;
+import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
+import com.hivemq.plugin.fileauthentication.util.HashSaltUtil;
+import com.hivemq.spi.aop.cache.Cached;
+import com.hivemq.spi.callback.CallbackPriority;
+import com.hivemq.spi.callback.exception.AuthenticationException;
+import com.hivemq.spi.callback.security.OnAuthenticationCallback;
+import com.hivemq.spi.security.ClientCredentialsData;
 
 import java.util.concurrent.TimeUnit;
 
@@ -53,21 +53,33 @@ public class FileAuthenticator implements OnAuthenticationCallback {
     /**
      * The configuration and {@link PasswordComparator} is injected, using Guice.
      *
-     * @param configurations     object, which holds all properties read from the specified configuration files in {@link com.dcsquare.hivemq.plugin.fileauthentication.FileAuthenticationModule}
+     * @param configurations     object, which holds all properties read from the specified configuration files in {@link com.hivemq.plugin.fileauthentication.FileAuthenticationModule}
      * @param passwordComparator instance of the class {@link PasswordComparator}
      */
     @Inject
-    public FileAuthenticator(Configuration configurations, PasswordComparator passwordComparator) {
+    public FileAuthenticator(final Configuration configurations, PasswordComparator passwordComparator) {
 
         this.configurations = configurations;
         this.passwordComparator = passwordComparator;
 
-        isHashed = configurations.getBoolean("passwordHashing.enabled", true);
-        iterations = configurations.getInt("passwordHashing.iterations", 1000000);
-        algorithm = configurations.getString("passwordHashing.algorithm", "SHA-512");
-        separationChar = configurations.getString("passwordHashingSalt.separationChar", "$");
-        isSalted = configurations.getBoolean("passwordHashingSalt.enabled", true);
-        isFirst = configurations.getBoolean("passwordHashingSalt.isFirst", true);
+        loadConfig();
+
+        configurations.setRestartListener(new Configuration.RestartListener() {
+            @Override
+            public void restart() {
+                loadConfig();
+            }
+        });
+
+    }
+
+    private void loadConfig() {
+        isHashed = configurations.isHashed();
+        iterations = configurations.getHashingIterations();
+        algorithm = configurations.getHashingAlgorithm();
+        separationChar = configurations.getSeparationChar();
+        isSalted = configurations.isSalted();
+        isFirst = configurations.isSaltFirst();
     }
 
 
@@ -90,7 +102,7 @@ public class FileAuthenticator implements OnAuthenticationCallback {
             final String username = usernameOptional.get();
             final String password = passwordOptional.get();
 
-            final Optional<String> hashedPasswordOptional = Optional.fromNullable(configurations.getString(username));
+            final Optional<String> hashedPasswordOptional = Optional.fromNullable(configurations.getUser(username));
 
             if (!hashedPasswordOptional.isPresent()) {
                 return false;

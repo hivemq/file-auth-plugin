@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 dc-square GmbH
+ * Copyright 2015 dc-square GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  *  limitations under the License.
  */
 
-package com.dcsquare.hivemq.plugin.fileauthentication.exception;
+package com.hivemq.plugin.fileauthentication.exception;
 
 /**
- * This exception is throw if the password can not be split into hash and salt.
+ * This exception is throw if fileAuthConfiguration.properties or the credential file was not found.
  *
  * @author Christian Goetz
  */
-public class PasswordFormatException extends Exception {
-    public PasswordFormatException(String message) {
+public class ConfigurationFileNotFoundException extends RuntimeException {
+    public ConfigurationFileNotFoundException(String message) {
         super(message);
     }
 }

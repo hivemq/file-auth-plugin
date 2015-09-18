@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 dc-square GmbH
+ * Copyright 2015 dc-square GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package com.dcsquare.hivemq.plugin.fileauthentication;
+package com.hivemq.plugin.fileauthentication;
 
-import com.dcsquare.hivemq.plugin.fileauthentication.authentication.FileAuthenticator;
-import com.dcsquare.hivemq.spi.PluginEntryPoint;
-import com.dcsquare.hivemq.spi.callback.registry.CallbackRegistry;
+import com.hivemq.plugin.fileauthentication.authentication.FileAuthenticator;
+import com.hivemq.spi.PluginEntryPoint;
+import com.hivemq.spi.callback.registry.CallbackRegistry;
 import com.google.inject.Inject;
 
 import javax.annotation.PostConstruct;
@@ -37,7 +37,7 @@ public class FileAuthMain extends PluginEntryPoint {
     /**
      * Inject callback class and callback registry
      * <p/>
-     * Injection of callback registry was favoured against {@link com.dcsquare.hivemq.plugin.fileauthentication.FileAuthMain#getCallbackRegistry()}
+     * Injection of callback registry was favoured against {@link com.hivemq.plugin.fileauthentication.FileAuthMain#getCallbackRegistry()}
      * because then it can be replaced in testing.
      *
      * @param fileAuthenticator implementation of OnAuthenticationCallback

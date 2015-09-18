@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 dc-square GmbH
+ * Copyright 2015 dc-square GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,28 +14,15 @@
  *  limitations under the License.
  */
 
-package com.dcsquare.hivemq.plugin.fileauthentication.authentication;
+package com.hivemq.plugin.fileauthentication.exception;
 
 /**
- * Helper class, which holds hash and salt
+ * This exception is throw if the password can not be split into hash and salt.
  *
  * @author Christian Goetz
  */
-public class HashedSaltedPassword {
-
-    private String salt;
-    private String hash;
-
-    public HashedSaltedPassword(String hash, String salt) {
-        this.hash = hash;
-        this.salt = salt;
-    }
-
-    public String getHash() {
-        return hash;
-    }
-
-    public String getSalt() {
-        return salt;
+public class PasswordFormatException extends Exception {
+    public PasswordFormatException(String message) {
+        super(message);
     }
 }

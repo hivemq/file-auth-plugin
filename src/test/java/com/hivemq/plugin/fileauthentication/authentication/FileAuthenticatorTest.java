@@ -1,9 +1,25 @@
-package com.dcsquare.hivemq.plugin.fileauthentication.authentication;
+/*
+ * Copyright 2015 dc-square GmbH
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-import com.dcsquare.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
-import com.dcsquare.hivemq.spi.security.ClientCredentialsData;
+package com.hivemq.plugin.fileauthentication.authentication;
+
+import com.hivemq.plugin.fileauthentication.configuration.Configuration;
+import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
+import com.hivemq.spi.security.ClientCredentialsData;
 import com.google.common.base.Optional;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -65,7 +81,7 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of("password"));
 
-        when(configuration.getString(providedUsername)).thenReturn(null);
+        when(configuration.getUser(providedUsername)).thenReturn(null);
 
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         final Boolean isAuthenticated = fileAuthenticator.checkCredentials(clientCredentialsData);
@@ -82,8 +98,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashing.enabled")).thenReturn(false);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isHashed()).thenReturn(false);
 
         when(passwordComparator.validatePlaintextPassword(filePassword, providedPassword)).thenReturn(true);
 
@@ -102,8 +118,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashing.enabled")).thenReturn(false);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isHashed()).thenReturn(false);
 
         when(passwordComparator.validatePlaintextPassword(filePassword, providedPassword)).thenReturn(false);
 
@@ -122,13 +138,13 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashingSalt.enabled", true)).thenReturn(false);
-        when(configuration.getBoolean("passwordHashing.enabled", true)).thenReturn(true);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isSalted()).thenReturn(false);
+        when(configuration.isHashed()).thenReturn(true);
         final String algorithm = "SHA-512";
-        when(configuration.getString("passwordHashing.algorithm", "SHA-512")).thenReturn(algorithm);
+        when(configuration.getHashingAlgorithm()).thenReturn(algorithm);
         final int iterations = 1000000;
-        when(configuration.getInt("passwordHashing.iterations", 1000000)).thenReturn(iterations);
+        when(configuration.getHashingIterations()).thenReturn(iterations);
 
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         when(passwordComparator.validateHashedPassword(algorithm, providedPassword, filePassword, iterations)).thenReturn(true);
@@ -149,13 +165,13 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashingSalt.enabled", true)).thenReturn(false);
-        when(configuration.getBoolean("passwordHashing.enabled", true)).thenReturn(true);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isSalted()).thenReturn(false);
+        when(configuration.isHashed()).thenReturn(true);
         final String algorithm = "SHA-512";
-        when(configuration.getString("passwordHashing.algorithm", "SHA-512")).thenReturn(algorithm);
+        when(configuration.getHashingAlgorithm()).thenReturn(algorithm);
         final int iterations = 1000000;
-        when(configuration.getInt("passwordHashing.iterations", 1000000)).thenReturn(iterations);
+        when(configuration.getHashingIterations()).thenReturn(iterations);
 
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         when(passwordComparator.validateHashedPassword(algorithm, providedPassword, filePassword, iterations)).thenReturn(false);
@@ -177,13 +193,13 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashingSalt.enabled", true)).thenReturn(true);
-        when(configuration.getBoolean("passwordHashing.enabled", true)).thenReturn(true);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isSalted()).thenReturn(true);
+        when(configuration.isHashed()).thenReturn(true);
         final String algorithm = "SHA-512";
-        when(configuration.getString("passwordHashing.algorithm", "SHA-512")).thenReturn(algorithm);
+        when(configuration.getHashingAlgorithm()).thenReturn(algorithm);
         final int iterations = 1000000;
-        when(configuration.getInt("passwordHashing.iterations", 1000000)).thenReturn(iterations);
+        when(configuration.getHashingIterations()).thenReturn(iterations);
 
         final String salt = "salt";
         final String hash = "hash";
@@ -209,13 +225,13 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashingSalt.enabled", true)).thenReturn(true);
-        when(configuration.getBoolean("passwordHashing.enabled", true)).thenReturn(true);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isSalted()).thenReturn(true);
+        when(configuration.isHashed()).thenReturn(true);
         final String algorithm = "SHA-512";
-        when(configuration.getString("passwordHashing.algorithm", "SHA-512")).thenReturn(algorithm);
+        when(configuration.getHashingAlgorithm()).thenReturn(algorithm);
         final int iterations = 1000000;
-        when(configuration.getInt("passwordHashing.iterations", 1000000)).thenReturn(iterations);
+        when(configuration.getHashingIterations()).thenReturn(iterations);
 
         final String salt = "salt";
         final String hash = "hash";
@@ -241,13 +257,13 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
 
         final String filePassword = "password";
-        when(configuration.getString(providedUsername)).thenReturn(filePassword);
-        when(configuration.getBoolean("passwordHashingSalt.enabled", true)).thenReturn(true);
-        when(configuration.getBoolean("passwordHashing.enabled", true)).thenReturn(true);
+        when(configuration.getUser(providedUsername)).thenReturn(filePassword);
+        when(configuration.isSalted()).thenReturn(true);
+        when(configuration.isHashed()).thenReturn(true);
         final String algorithm = "SHA-512";
-        when(configuration.getString("passwordHashing.algorithm", "SHA-512")).thenReturn(algorithm);
+        when(configuration.getHashingAlgorithm()).thenReturn(algorithm);
         final int iterations = 1000000;
-        when(configuration.getInt("passwordHashing.iterations", 1000000)).thenReturn(iterations);
+        when(configuration.getHashingIterations()).thenReturn(iterations);
 
         final String salt = "salt";
         final String hash = "hash";
