@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.dcsquare.hivemq.plugin</groupId>
+  <groupId>com.hivemq.plugin</groupId>
   <artifactId>file-authentication</artifactId>
-  <version>2.0.1</version>
+  <version>3.0.0</version>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.0</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
       <plugin>
@@ -26,7 +26,7 @@
             <configuration>
               <artifactSet>
                 <excludes>
-                  <exclude>com.dcsquare.hivemq:hivemq-spi</exclude>
+                  <exclude>com.hivemq:hivemq-spi</exclude>
                   <exclude>com.google.inject:*</exclude>
                   <exclude>com.google.guava:*</exclude>
                   <exclude>org.slf4j:*</exclude>
@@ -160,9 +160,9 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>com.dcsquare</groupId>
+            <groupId>com.hivemq</groupId>
             <artifactId>hivemq-maven-plugin</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0-SNAPSHOT</version>
             <executions>
               <execution>
                 <id>hivemq</id>
@@ -171,7 +171,8 @@
                   <goal>hivemq</goal>
                 </goals>
                 <configuration>
-                  <hiveMQDir>/Applications/hivemq-dev</hiveMQDir>
+                  <hiveMQDir>/Applications/hivemq-3.0.0-SNAPSHOT</hiveMQDir>
+                  <debugMode>SERVER</debugMode>
                 </configuration>
               </execution>
             </executions>
@@ -200,9 +201,9 @@
   </pluginRepositories>
   <dependencies>
     <dependency>
-      <groupId>com.dcsquare.hivemq</groupId>
+      <groupId>com.hivemq</groupId>
       <artifactId>hivemq-spi</artifactId>
-      <version>1.4</version>
+      <version>3.0.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
