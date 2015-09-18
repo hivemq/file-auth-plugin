@@ -162,7 +162,7 @@
           <plugin>
             <groupId>com.hivemq</groupId>
             <artifactId>hivemq-maven-plugin</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>3.0.0</version>
             <executions>
               <execution>
                 <id>hivemq</id>
@@ -171,7 +171,7 @@
                   <goal>hivemq</goal>
                 </goals>
                 <configuration>
-                  <hiveMQDir>/Applications/hivemq-3.0.0-SNAPSHOT</hiveMQDir>
+                  <hiveMQDir>/Applications/hivemq-3</hiveMQDir>
                   <debugMode>SERVER</debugMode>
                 </configuration>
               </execution>
