@@ -61,6 +61,12 @@
 
     </dependencies>
 
+    <properties>
+        <asciidoctor.version>1.5.2.1</asciidoctor.version>
+        <output.dir>${basedir}</output.dir>
+        <source.document.name>README.adoc</source.document.name>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -194,6 +200,32 @@
                         <!--</plugin>-->
                     </reportPlugins>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>${asciidoctor.version}</version>
+                <executions>
+                    <execution>
+                        <id>output-html</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <backend>html</backend>
+                            <doctype>xhtml</doctype>
+                            <headerFooter>true</headerFooter>
+                            <sourceDirectory>${basedir}</sourceDirectory>
+                            <outputDirectory>${output.dir}/target</outputDirectory>
+                            <sourceDocumentName>${source.document.name}</sourceDocumentName>
+                            <attributes>
+                                <icons>font</icons>
+                                <toc2/>
+                            </attributes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
