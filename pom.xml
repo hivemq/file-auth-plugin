@@ -64,6 +64,7 @@
     <properties>
         <asciidoctor.version>1.5.2.1</asciidoctor.version>
         <output.dir>${basedir}</output.dir>
+        <fileauth-utility-version>1.1</fileauth-utility-version>
         <source.document.name>README.adoc</source.document.name>
     </properties>
 
@@ -201,32 +202,6 @@
                     </reportPlugins>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.asciidoctor</groupId>
-                <artifactId>asciidoctor-maven-plugin</artifactId>
-                <version>${asciidoctor.version}</version>
-                <executions>
-                    <execution>
-                        <id>output-html</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>process-asciidoc</goal>
-                        </goals>
-                        <configuration>
-                            <backend>html</backend>
-                            <doctype>xhtml</doctype>
-                            <headerFooter>true</headerFooter>
-                            <sourceDirectory>${basedir}</sourceDirectory>
-                            <outputDirectory>${output.dir}/target</outputDirectory>
-                            <sourceDocumentName>${source.document.name}</sourceDocumentName>
-                            <attributes>
-                                <icons>font</icons>
-                                <toc2/>
-                            </attributes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -252,7 +227,55 @@
                             </execution>
                         </executions>
                     </plugin>
-
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>donwload-file-auth-util</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>wget</goal>
+                                </goals>
+                                <configuration>
+                                    <url>
+                                        https://github.com/hivemq/file-auth-plugin-utility/releases/download/v${fileauth-utility-version}/file-authentication-plugin-utility-${fileauth-utility-version}.jar
+                                    </url>
+                                    <unpack>false</unpack>
+                                    <cacheDirectory>${basedir}/cache/</cacheDirectory>
+                                    <outputDirectory>${project.build.directory}/downloads/</outputDirectory>
+                                    <!--<outputFileName>file-authentication-plugin-utility.jar</outputFileName>-->
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.asciidoctor</groupId>
+                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                        <version>1.5.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>output-html</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <backend>html</backend>
+                                    <doctype>xhtml</doctype>
+                                    <headerFooter>true</headerFooter>
+                                    <sourceDirectory>${basedir}</sourceDirectory>
+                                    <outputDirectory>${basedir}/target</outputDirectory>
+                                    <sourceDocumentName>README.adoc</sourceDocumentName>
+                                    <attributes>
+                                        <icons>font</icons>
+                                        <toc2/>
+                                    </attributes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>

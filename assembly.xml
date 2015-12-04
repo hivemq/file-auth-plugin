@@ -13,8 +13,17 @@ http://maven.apache.org/xsd/assembly-1.1.2.xsd ">
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
+            <source>README.adoc</source>
+            <destName>README.txt</destName>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
             <source>LICENSE.txt</source>
             <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>target/downloads/file-authentication-plugin-utility-${fileauth-utility-version}.jar</source>
+            <outputDirectory>/tools/</outputDirectory>
         </file>
         <file>
             <source>target/${artifactId}-${version}.jar</source>
