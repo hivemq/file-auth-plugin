@@ -81,18 +81,25 @@ public abstract class ReloadingPropertiesReader {
     public void reload() {
 
         Map<String, String> oldValues = getCurrentValues();
-
         try {
-            final Properties props = new Properties();
-            props.load(new FileReader(file));
-            properties = props;
+            final FileReader fileReader = new FileReader(file);
+            replaceProperties(fileReader);
 
             Map<String, String> newValues = getCurrentValues();
-
             logChanges(oldValues, newValues);
 
         } catch (IOException e) {
             log.debug("Not able to reload configuration file {}", this.file.getAbsolutePath());
+        }
+    }
+
+    public void replaceProperties(final FileReader fileReader) throws IOException {
+        try {
+            final Properties props = new Properties();
+            props.load(fileReader);
+            properties = props;
+        } finally {
+            fileReader.close();
         }
     }
 
