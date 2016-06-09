@@ -25,7 +25,7 @@ import com.hivemq.spi.plugin.meta.Information;
  *
  * @author Christian Goetz
  */
-@Information(name = "File Authentication Plugin", version = "3.0.2", author = "dc-sqare GmbH")
+@Information(name = "File Authentication Plugin", version = "3.0.2", author = "dc-square GmbH")
 public class FileAuthenticationModule extends HiveMQPluginModule {
 
 
