@@ -30,14 +30,14 @@ public class CredentialsConfiguration extends ReloadingPropertiesReader {
     private final int reloadSeconds;
 
     @Inject
-    public CredentialsConfiguration(final PluginExecutorService pluginExecutorService, String filename, int reloadSeconds) {
+    public CredentialsConfiguration(final PluginExecutorService pluginExecutorService, final String filename, final int reloadSeconds) {
         super(pluginExecutorService);
 
         this.filename = filename;
         this.reloadSeconds = reloadSeconds;
     }
 
-    public String getUser(String username) {
+    public String getUser(final String username) {
         return properties.getProperty(username);
     }
 

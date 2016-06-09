@@ -6,7 +6,7 @@
 
     <groupId>com.hivemq.plugin</groupId>
     <artifactId>file-authentication</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
 
     <dependencies>
 
