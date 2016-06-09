@@ -16,6 +16,7 @@
 
 package com.hivemq.plugin.fileauthentication.authentication;
 
+import com.google.common.net.InetAddresses;
 import com.hivemq.plugin.fileauthentication.configuration.Configuration;
 import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
 import com.hivemq.spi.security.ClientCredentialsData;
@@ -23,6 +24,8 @@ import com.google.common.base.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import java.net.InetAddress;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -55,6 +58,7 @@ public class FileAuthenticatorTest {
 
         when(clientCredentialsData.getUsername()).thenReturn(Optional.<String>absent());
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of("password"));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
 
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         final Boolean isAuthenticated = fileAuthenticator.checkCredentials(clientCredentialsData);
@@ -67,6 +71,8 @@ public class FileAuthenticatorTest {
 
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of("user"));
         when(clientCredentialsData.getPassword()).thenReturn(Optional.<String>absent());
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         final Boolean isAuthenticated = fileAuthenticator.checkCredentials(clientCredentialsData);
@@ -80,6 +86,8 @@ public class FileAuthenticatorTest {
         final String providedUsername = "user";
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of("password"));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         when(configuration.getUser(providedUsername)).thenReturn(null);
 
@@ -96,6 +104,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "password";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -116,6 +126,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "wrong";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -136,6 +148,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "password";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -163,6 +177,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "wrong";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -191,6 +207,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "password";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -223,6 +241,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "wrong";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
@@ -255,6 +275,8 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.of(providedUsername));
         final String providedPassword = "wrong";
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of(providedPassword));
+        when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
+
 
         final String filePassword = "password";
         when(configuration.getUser(providedUsername)).thenReturn(filePassword);
