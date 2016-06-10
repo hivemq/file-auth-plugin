@@ -16,10 +16,10 @@
 
 package com.hivemq.plugin.fileauthentication;
 
+import com.google.inject.Inject;
 import com.hivemq.plugin.fileauthentication.authentication.FileAuthenticator;
 import com.hivemq.spi.PluginEntryPoint;
 import com.hivemq.spi.callback.registry.CallbackRegistry;
-import com.google.inject.Inject;
 
 import javax.annotation.PostConstruct;
 
@@ -31,8 +31,8 @@ import javax.annotation.PostConstruct;
  */
 public class FileAuthMain extends PluginEntryPoint {
 
-    FileAuthenticator fileAuthenticator;
-    CallbackRegistry callbackRegistry;
+    private FileAuthenticator fileAuthenticator;
+    private CallbackRegistry callbackRegistry;
 
     /**
      * Inject callback class and callback registry
@@ -44,7 +44,7 @@ public class FileAuthMain extends PluginEntryPoint {
      * @param callbackRegistry  callback registry
      */
     @Inject
-    public FileAuthMain(FileAuthenticator fileAuthenticator, CallbackRegistry callbackRegistry) {
+    public FileAuthMain(final FileAuthenticator fileAuthenticator, final CallbackRegistry callbackRegistry) {
         this.fileAuthenticator = fileAuthenticator;
         this.callbackRegistry = callbackRegistry;
     }

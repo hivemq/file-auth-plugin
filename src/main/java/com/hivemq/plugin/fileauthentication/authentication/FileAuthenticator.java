@@ -27,7 +27,10 @@ import com.hivemq.spi.callback.CallbackPriority;
 import com.hivemq.spi.callback.exception.AuthenticationException;
 import com.hivemq.spi.callback.security.OnAuthenticationCallback;
 import com.hivemq.spi.security.ClientCredentialsData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,6 +40,8 @@ import java.util.concurrent.TimeUnit;
  * @author Christian Goetz
  */
 public class FileAuthenticator implements OnAuthenticationCallback {
+
+    private static final Logger log = LoggerFactory.getLogger(FileAuthenticator.class);
 
     private Configuration configurations;
 
@@ -80,6 +85,15 @@ public class FileAuthenticator implements OnAuthenticationCallback {
         separationChar = configurations.getSeparationChar();
         isSalted = configurations.isSalted();
         isFirst = configurations.isSaltFirst();
+
+        log.debug("File Authentication Configuration:");
+        log.debug("hashed: {}", isHashed);
+        log.debug("salted: {}", isSalted);
+        log.debug("salt first: {}", isFirst);
+        log.debug("iterations: {}", iterations);
+        log.debug("algorithm: {}", algorithm);
+        log.debug("separationChar: {}", separationChar);
+
     }
 
 
@@ -92,10 +106,29 @@ public class FileAuthenticator implements OnAuthenticationCallback {
      */
     @Override
     @Cached(timeToLive = 5, timeUnit = TimeUnit.MINUTES)
-    public Boolean checkCredentials(ClientCredentialsData clientCredentialsData) throws AuthenticationException {
+    public Boolean checkCredentials(final ClientCredentialsData clientCredentialsData) throws AuthenticationException {
 
+        log.trace("Checking user name and password for client with IP {}, client identifier '{}' and username '{}'",
+                clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                clientCredentialsData.getClientId(), clientCredentialsData.getUsername().or("NONE"));
         final Optional<String> usernameOptional = clientCredentialsData.getUsername();
         final Optional<String> passwordOptional = clientCredentialsData.getPassword();
+
+        if (!usernameOptional.isPresent()) {
+            log.debug("No username is present for client with IP {} and client identifier '{}'. Denying access.",
+                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsData.getClientId());
+
+            return false;
+        }
+
+        if (!passwordOptional.isPresent()) {
+            log.debug("No password is present for client with IP {}, client identifier '{}' and username '{}'. Denying access.",
+                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsData.getClientId(), clientCredentialsData.getUsername().or("NONE"));
+
+            return false;
+        }
 
         if (usernameOptional.isPresent() && passwordOptional.isPresent()) {
 
@@ -105,17 +138,26 @@ public class FileAuthenticator implements OnAuthenticationCallback {
             final Optional<String> hashedPasswordOptional = Optional.fromNullable(configurations.getUser(username));
 
             if (!hashedPasswordOptional.isPresent()) {
+                log.debug("No password is present for username '{}' in the config file. Denying access.", username);
                 return false;
             }
 
             final String hashedPassword = hashedPasswordOptional.get();
 
             if (!isHashed) {
-                return passwordComparator.validatePlaintextPassword(hashedPassword, password);
+                final boolean granted = passwordComparator.validatePlaintextPassword(hashedPassword, password);
+                log.debug("Plaintext password validation for client with IP {}, client identifier '{}' and username '{}' was {}.",
+                        clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                        clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+                return granted;
             }
 
             if (!isSalted) {
-                return passwordComparator.validateHashedPassword(algorithm, password, hashedPassword, iterations);
+                final boolean granted = passwordComparator.validateHashedPassword(algorithm, password, hashedPassword, iterations);
+                log.debug("Hashed password validation (without salt) for client with IP {}, client identifier '{}' and username '{}' was {}.",
+                        clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                        clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+                return granted;
             }
 
             final HashedSaltedPassword hashedSaltedPassword;
@@ -125,12 +167,17 @@ public class FileAuthenticator implements OnAuthenticationCallback {
                 return false;
             }
 
-            return passwordComparator.validateHashedAndSaltedPassword(
+            final boolean granted = passwordComparator.validateHashedAndSaltedPassword(
                     algorithm,
                     password,
                     hashedSaltedPassword.getHash(),
                     iterations,
                     hashedSaltedPassword.getSalt());
+
+            log.debug("Hashed password validation (with salt) for client with IP {}, client identifier '{}' and username '{}' was {}.",
+                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+            return granted;
         } else {
             return false;
         }
@@ -147,7 +194,7 @@ public class FileAuthenticator implements OnAuthenticationCallback {
      * @throws PasswordFormatException thrown when the string is in an unsupported format
      */
     @VisibleForTesting
-    HashedSaltedPassword getHashAndSalt(String hashedPassword) throws PasswordFormatException {
+    HashedSaltedPassword getHashAndSalt(final String hashedPassword) throws PasswordFormatException {
         return HashSaltUtil.retrieve(isFirst, separationChar, hashedPassword);
     }
 
