@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.hivemq.spi.annotations.NotNull;
+import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
 import com.hivemq.spi.services.configuration.ValueChangedCallback;
 import com.hivemq.spi.util.PathUtils;
@@ -42,17 +43,20 @@ public abstract class ReloadingPropertiesReader {
     private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
     private final PluginExecutorService pluginExecutorService;
+    private final SystemInformation systemInformation;
     protected Properties properties;
     protected Map<String, List<ValueChangedCallback<String>>> callbacks = Maps.newHashMap();
     private File file;
 
-    public ReloadingPropertiesReader(final PluginExecutorService pluginExecutorService) {
+    public ReloadingPropertiesReader(final PluginExecutorService pluginExecutorService, final SystemInformation systemInformation) {
         this.pluginExecutorService = pluginExecutorService;
+        this.systemInformation = systemInformation;
     }
 
     public void init() {
 
-        this.file = PathUtils.findAbsoluteAndRelative(getFilename());
+        final String filePath = systemInformation.getHiveMQHomeFolder().getPath() + File.separator + getFilename();
+        this.file = new File(filePath);
 
         try {
             properties = new Properties();

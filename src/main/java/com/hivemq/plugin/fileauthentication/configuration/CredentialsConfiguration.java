@@ -16,6 +16,7 @@
 
 package com.hivemq.plugin.fileauthentication.configuration;
 
+import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
 
 import javax.inject.Inject;
@@ -30,8 +31,8 @@ public class CredentialsConfiguration extends ReloadingPropertiesReader {
     private final int reloadSeconds;
 
     @Inject
-    public CredentialsConfiguration(final PluginExecutorService pluginExecutorService, final String filename, final int reloadSeconds) {
-        super(pluginExecutorService);
+    public CredentialsConfiguration(final PluginExecutorService pluginExecutorService, final String filename, final int reloadSeconds, final SystemInformation systemInformation) {
+        super(pluginExecutorService, systemInformation);
 
         this.filename = filename;
         this.reloadSeconds = reloadSeconds;

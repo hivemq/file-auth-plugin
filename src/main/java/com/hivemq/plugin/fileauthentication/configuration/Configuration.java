@@ -44,7 +44,7 @@ public class Configuration extends ReloadingPropertiesReader {
 
     @Inject
     public Configuration(final PluginExecutorService pluginExecutorService, SystemInformation systemInformation) {
-        super(pluginExecutorService);
+        super(pluginExecutorService, systemInformation);
         this.pluginExecutorService = pluginExecutorService;
         this.systemInformation = systemInformation;
 
@@ -76,7 +76,7 @@ public class Configuration extends ReloadingPropertiesReader {
 
         final Optional<String> filename = Optional.fromNullable(getCredentialsFilename());
         if (filename.isPresent() && new File(systemInformation.getPluginFolder(), filename.get()).exists()) {
-            credentialsConfiguration = new CredentialsConfiguration(pluginExecutorService, getCredentialsFilename(), getReloadInterval());
+            credentialsConfiguration = new CredentialsConfiguration(pluginExecutorService, getCredentialsFilename(), getReloadInterval(),systemInformation);
             credentialsConfiguration.init();
         } else {
             throw new ConfigurationFileNotFoundException("Credentials file " + filename.get() + " was not found in plugin folder:" + systemInformation.getPluginFolder().getAbsolutePath());
