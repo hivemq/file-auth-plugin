@@ -10,8 +10,8 @@ The File Authentication Plugin is the first plugin, which adds the capability of
 
 . Copy the jar file to your +<HIVEMQ_HOME>/plugins+ folder
 . Copy configuration files
-..  +sample-configuration/fileAuthConfiguration.properties+ into your +<HIVEMQ_HOME>/plugins+ folder
-..  +sample-configuration/credentials.properties+ into your +<HIVEMQ_HOME>/plugins+ folder
+..  +sample-configuration/fileAuthConfiguration.properties+ into your +<HIVEMQ_HOME>/conf+ folder
+..  +sample-configuration/credentials.properties+ into your +<HIVEMQ_HOME>/conf+ folder
 . Run HiveMQ
 . Connect with a {hivemq-blog-tools}[MQTT client] of your choice using username: +hivemq-user1+ and password: +user1+
 . Done!
@@ -52,7 +52,7 @@ The plugin can be configured with the +fileAuthConfiguration.properties+ file, w
 
 
 |passwordHashing.iterations
-|1000000
+|100
 |Customizes the number of hashing iterations used.
 
 
@@ -91,7 +91,7 @@ The displayed configuration shows a production-ready implementation, which uses 
 ----
 passwordHashing.enabled=true
 passwordHashing.algorithm=SHA-512
-passwordHashing.iterations=1000000
+passwordHashing.iterations=100
 passwordHashingSalt.enabled=true
 passwordHashingSalt.isFirst=true
 ----

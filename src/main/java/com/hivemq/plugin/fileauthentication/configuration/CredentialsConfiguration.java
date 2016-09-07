@@ -44,7 +44,7 @@ public class CredentialsConfiguration extends ReloadingPropertiesReader {
 
     @Override
     public String getFilename() {
-        return "plugins" + File.separator + filename;
+        return filename;
     }
 
     @Override

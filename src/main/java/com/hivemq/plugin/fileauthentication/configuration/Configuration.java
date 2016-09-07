@@ -75,7 +75,7 @@ public class Configuration extends ReloadingPropertiesReader {
     public void postConstruct() {
 
         final Optional<String> filename = Optional.fromNullable(getCredentialsFilename());
-        if (filename.isPresent() && new File(systemInformation.getPluginFolder(), filename.get()).exists()) {
+        if (filename.isPresent() && new File(systemInformation.getConfigFolder(), filename.get()).exists()) {
             credentialsConfiguration = new CredentialsConfiguration(pluginExecutorService, getCredentialsFilename(), getReloadInterval(),systemInformation);
             credentialsConfiguration.init();
         } else {
@@ -121,7 +121,7 @@ public class Configuration extends ReloadingPropertiesReader {
 
     @Override
     public String getFilename() {
-        return "plugins" + File.separator + "fileAuthConfiguration.properties";
+        return "fileAuthConfiguration.properties";
     }
 
     @Override

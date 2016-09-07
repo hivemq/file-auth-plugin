@@ -55,8 +55,7 @@ public abstract class ReloadingPropertiesReader {
 
     public void init() {
 
-        final String filePath = systemInformation.getHiveMQHomeFolder().getPath() + File.separator + getFilename();
-        this.file = new File(filePath);
+        this.file = new File(systemInformation.getConfigFolder(),getFilename());
 
         try {
             properties = new Properties();
