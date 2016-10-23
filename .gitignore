@@ -3,3 +3,5 @@
 /libraries/
 /.idea/
 /cache/
+file-authentication.iml
+dependency-reduced-pom.xml

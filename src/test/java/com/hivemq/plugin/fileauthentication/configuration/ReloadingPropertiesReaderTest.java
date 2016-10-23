@@ -22,7 +22,7 @@ public class ReloadingPropertiesReaderTest extends TestCase {
     private static class TestReloadingPropertiesReader extends ReloadingPropertiesReader {
 
         public TestReloadingPropertiesReader() {
-            super(null);
+            super(null,null);
         }
 
         @Override
