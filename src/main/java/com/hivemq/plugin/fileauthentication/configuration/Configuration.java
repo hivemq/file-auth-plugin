@@ -37,6 +37,9 @@ import java.util.Properties;
 @Singleton
 public class Configuration extends ReloadingPropertiesReader {
 
+    public static final String DEFAULT_VALUE_RELOAD = "10";
+
+
     private final PluginExecutorService pluginExecutorService;
     private final SystemInformation systemInformation;
     private RestartListener listener;
@@ -88,7 +91,7 @@ public class Configuration extends ReloadingPropertiesReader {
     }
 
     public int getReloadInterval() {
-        return Integer.parseInt(properties.getProperty("reloadCredentialsInterval", "1000000"));
+        return Integer.parseInt(properties.getProperty("reloadCredentialsInterval", DEFAULT_VALUE_RELOAD));
     }
 
     public boolean isHashed() {
@@ -124,9 +127,14 @@ public class Configuration extends ReloadingPropertiesReader {
         return "fileAuthConfiguration.properties";
     }
 
+
+    /**
+     * redundant to the getReloadIntervall() - method. Not removed due to compability-issues
+     * @return the interval for the reloads of the credentials-informations in seconds
+     */
     @Override
     public int getReloadIntervalinSeconds() {
-        return 10;
+        return getReloadInterval();
     }
 
     public void setRestartListener(final RestartListener listener) {
