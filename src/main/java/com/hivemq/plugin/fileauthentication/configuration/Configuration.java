@@ -37,7 +37,20 @@ import java.util.Properties;
 @Singleton
 public class Configuration extends ReloadingPropertiesReader {
 
-    public static final String DEFAULT_VALUE_RELOAD = "10";
+    /**
+     *  Default for the reloadinterval for the .property files in seconds
+     */
+    private static final String DEFAULT_VALUE_RELOAD = "10";
+
+    /**
+     * Default for the time credentials are cached in seconds
+     */
+    private static final String DEFAULT_VALUE_CACHING_TIME = "10";
+
+    /**
+     * Default for the number of Hashing Iterations
+     */
+    private static final String DEFAULT_VALUE_HASHING_ITERATIONS = "100";
 
 
     private final PluginExecutorService pluginExecutorService;
@@ -70,6 +83,8 @@ public class Configuration extends ReloadingPropertiesReader {
         addCallback("passwordHashingSalt.separationChar", callback);
         addCallback("passwordHashingSalt.enabled", callback);
         addCallback("passwordHashingSalt.isFirst", callback);
+        addCallback("cachingTime.seconds", callback);
+        addCallback("cacheSize", callback);
 
 
     }
@@ -94,12 +109,21 @@ public class Configuration extends ReloadingPropertiesReader {
         return Integer.parseInt(properties.getProperty("reloadCredentialsInterval", DEFAULT_VALUE_RELOAD));
     }
 
+    public int getCachingTime() {
+        return Integer.parseInt(properties.getProperty("cachingTime.seconds", DEFAULT_VALUE_CACHING_TIME));
+    }
+
+    public int getCacheSize() {
+        return Integer.parseInt(properties.getProperty("cacheSize", "1000"));
+    }
+
+
     public boolean isHashed() {
         return Boolean.parseBoolean(properties.getProperty("passwordHashing.enabled", "true"));
     }
 
     public int getHashingIterations() {
-        return Integer.parseInt(properties.getProperty("passwordHashing.iterations", "1000000"));
+        return Integer.parseInt(properties.getProperty("passwordHashing.iterations", DEFAULT_VALUE_HASHING_ITERATIONS));
     }
 
     public String getHashingAlgorithm() {
