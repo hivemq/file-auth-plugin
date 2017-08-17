@@ -23,7 +23,6 @@ import com.hivemq.spi.annotations.NotNull;
 import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
 import com.hivemq.spi.services.configuration.ValueChangedCallback;
-import com.hivemq.spi.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,7 @@ public abstract class ReloadingPropertiesReader {
 
     public void init() {
 
-        this.file = new File(systemInformation.getConfigFolder(),getFilename());
+        this.file = new File(systemInformation.getConfigFolder(), getFilename());
 
         try {
             properties = new Properties();
