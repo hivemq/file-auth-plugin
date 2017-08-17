@@ -22,6 +22,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
+import com.hivemq.plugin.fileauthentication.callbacks.CredentialChangeCallback;
 import com.hivemq.plugin.fileauthentication.configuration.Configuration;
 import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
 import com.hivemq.plugin.fileauthentication.util.HashSaltUtil;
@@ -80,6 +81,15 @@ public class FileAuthenticator implements OnAuthenticationCallback {
                 changeCache();
             }
         });
+
+        configurations.addCallback(new CredentialChangeCallback() {
+            @Override
+            public void onCredentialChange() {
+                log.info("Credential cache is invalidated");
+                cache.invalidateAll();
+            }
+        });
+
 
         this.cache = CacheBuilder.newBuilder()
                 .expireAfterWrite(cachingTimeInSeconds, TimeUnit.SECONDS)
@@ -305,19 +315,6 @@ public class FileAuthenticator implements OnAuthenticationCallback {
                 return false;
 
             return true;
-        }
-
-
-        @Override
-        public int hashCode() {
-            int prime = 31;
-            int result = 3;
-
-            result = result * prime + this.clientCredentialsData.getUsername().hashCode();
-            result = result + prime + this.clientCredentialsData.getPassword().hashCode();
-
-            return result;
-
         }
 
     }

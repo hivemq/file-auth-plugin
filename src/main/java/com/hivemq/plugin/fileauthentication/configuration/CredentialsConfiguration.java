@@ -20,7 +20,6 @@ import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
 
 import javax.inject.Inject;
-import java.io.File;
 
 /**
  * @author Christian Götz
@@ -51,4 +50,16 @@ public class CredentialsConfiguration extends ReloadingPropertiesReader {
     public int getReloadIntervalinSeconds() {
         return reloadSeconds;
     }
+
+    @Override
+    public int hashCode() {
+
+        int result = filename != null ? filename.hashCode() : 0;
+        result = 31 * result + reloadSeconds;
+        result = 31 * result + properties.size();
+        //used because properties.hashcode doesnt change then properties change
+        result = 31 * result + (properties.toString().hashCode());
+        return result;
+    }
+
 }
