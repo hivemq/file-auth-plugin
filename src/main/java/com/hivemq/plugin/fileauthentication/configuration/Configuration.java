@@ -16,8 +16,9 @@
 
 package com.hivemq.plugin.fileauthentication.configuration;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.hivemq.plugin.fileauthentication.callbacks.CredentialChangeCallback;
+import com.hivemq.plugin.fileauthentication.callback.CredentialChangeCallback;
 import com.hivemq.plugin.fileauthentication.exception.ConfigurationFileNotFoundException;
 import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
@@ -42,27 +43,31 @@ import java.util.concurrent.TimeUnit;
 public class Configuration extends ReloadingPropertiesReader {
 
     /**
-     *  Default for the reloadinterval for the .property files in seconds
+     * Default cache size (in entries)
+     */
+    public static final String DEFAULT_VALUE_CACHE_SIZE = "10000";
+
+    /**
+     *  Default for the reloadInterval for the .properties files in seconds
      */
     private static final String DEFAULT_VALUE_RELOAD = "10";
 
     /**
-     * Default for the time credentials are cached in seconds
+     * Default cache entry lifetime in seconds for credentials
      */
-    private static final String DEFAULT_VALUE_CACHING_TIME = "10";
+    private static final String DEFAULT_VALUE_CACHING_TIME = "600";
 
     /**
      * Default for the number of Hashing Iterations
      */
     private static final String DEFAULT_VALUE_HASHING_ITERATIONS = "100";
-
+    
 
     private final PluginExecutorService pluginExecutorService;
     private final SystemInformation systemInformation;
     private RestartListener listener;
     private CredentialsConfiguration credentialsConfiguration;
-    private int previousCredentialsHash;
-    private final List<CredentialChangeCallback> callbacks;
+
 
 
     @Inject
@@ -70,7 +75,7 @@ public class Configuration extends ReloadingPropertiesReader {
         super(pluginExecutorService, systemInformation);
         this.pluginExecutorService = pluginExecutorService;
         this.systemInformation = systemInformation;
-        this.callbacks = new ArrayList<>();
+
 
         init();
 
@@ -94,18 +99,6 @@ public class Configuration extends ReloadingPropertiesReader {
         addCallback("cachingTime.seconds", callback);
         addCallback("cacheSize", callback);
 
-
-        //for the CredentialChangedCallback
-        pluginExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                if (credentialsChanged()) {
-                    for (CredentialChangeCallback callback : callbacks) {
-                        callback.onCredentialChange();
-                    }
-                }
-            }
-        }, 10, getReloadInterval(), TimeUnit.SECONDS);
     }
 
     @PostConstruct
@@ -133,7 +126,7 @@ public class Configuration extends ReloadingPropertiesReader {
     }
 
     public int getCacheSize() {
-        return Integer.parseInt(properties.getProperty("cacheSize", "1000"));
+        return Integer.parseInt(properties.getProperty("cacheSize", DEFAULT_VALUE_CACHE_SIZE));
     }
 
     public boolean isHashed() {
@@ -189,39 +182,7 @@ public class Configuration extends ReloadingPropertiesReader {
 
     }
 
-    /**
-     * @param newCallback the {@link CredentialChangeCallback} that should be performed after credential got changed
-     * @return true: callback was registered successfully, otherwise false
-     */
-    public boolean addCallback(CredentialChangeCallback newCallback) {
-
-        if (newCallback == null)
-            throw new NullPointerException("null isnt allowed as Callback");
-
-        if (!this.callbacks.contains(newCallback)) {
-            this.callbacks.add(newCallback);
-            return true;
-        }
-        return false;
-
+    public CredentialsConfiguration getCredentialsConfiguration() {
+        return credentialsConfiguration;
     }
-
-    /**
-     * compares the hashCodes of the current and the previous credentialsConfiguration
-     *
-     * @return true: the hashCode changed, so likely the credentialInformation changed, false in case it hasn´t changed
-     */
-    private boolean credentialsChanged() {
-        boolean changed;
-
-        if (this.previousCredentialsHash != credentialsConfiguration.hashCode()) {
-            changed = true;
-        } else {
-            changed = false;
-        }
-        previousCredentialsHash = credentialsConfiguration.hashCode();
-        return changed;
-    }
-
-
 }
