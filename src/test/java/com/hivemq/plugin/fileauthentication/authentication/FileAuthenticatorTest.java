@@ -18,6 +18,7 @@ package com.hivemq.plugin.fileauthentication.authentication;
 
 import com.google.common.net.InetAddresses;
 import com.hivemq.plugin.fileauthentication.configuration.Configuration;
+import com.hivemq.plugin.fileauthentication.configuration.CredentialsConfiguration;
 import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
 import com.hivemq.spi.security.ClientCredentialsData;
 import com.google.common.base.Optional;
@@ -47,10 +48,14 @@ public class FileAuthenticatorTest {
     ClientCredentialsData clientCredentialsData;
 
     FileAuthenticator fileAuthenticator;
+    @Mock
+    CredentialsConfiguration credentialsConfiguration;
+
 
     @Before
     public void setUp() throws Exception {
         initMocks(this);
+        when(configuration.getCredentialsConfiguration()).thenReturn(credentialsConfiguration);
     }
 
     @Test
@@ -59,7 +64,6 @@ public class FileAuthenticatorTest {
         when(clientCredentialsData.getUsername()).thenReturn(Optional.<String>absent());
         when(clientCredentialsData.getPassword()).thenReturn(Optional.of("password"));
         when(clientCredentialsData.getInetAddress()).thenReturn(Optional.of(InetAddress.getLoopbackAddress()));
-
         fileAuthenticator = new FileAuthenticator(configuration, passwordComparator);
         final Boolean isAuthenticated = fileAuthenticator.checkCredentials(clientCredentialsData);
 

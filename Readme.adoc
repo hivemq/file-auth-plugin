@@ -22,7 +22,7 @@ NOTE: This sample installation shows a simple and quick way to get started with 
 
 == Configuration Options
 
-The plugin can be configured with the +fileAuthConfiguration.properties+ file, which needs to be placed in the plugin folder next to the jar file.
+The plugin can be configured with the +fileAuthConfiguration.properties+ file, which needs to be placed in the conf folder.
 
 [cols="1m,1,2" options="header"]
 .Configuration Options 
@@ -69,6 +69,16 @@ The plugin can be configured with the +fileAuthConfiguration.properties+ file, w
 |passwordHashingSalt.isFirst
 |true
 |Specifies the order of hash and salt. If this is set to true, the salt is in front of the hash (salt$hash), if this option is false the salt is placed after the hash (hash$salt)
+
+
+|cachingTime.seconds
+|600
+|Maximum cache entry lifetime in seconds for failed and successful login credentials (changing this value resets the cache)
+
+
+|cacheSize
+|10000
+|Maximum amount of cached login credentials (changing this value resets the cache)
 
 |===
 
