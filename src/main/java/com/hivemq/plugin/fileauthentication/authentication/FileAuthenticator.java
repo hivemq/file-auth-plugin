@@ -18,19 +18,22 @@ package com.hivemq.plugin.fileauthentication.authentication;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.inject.Inject;
+import com.hivemq.plugin.fileauthentication.callback.CredentialChangeCallback;
 import com.hivemq.plugin.fileauthentication.configuration.Configuration;
 import com.hivemq.plugin.fileauthentication.exception.PasswordFormatException;
 import com.hivemq.plugin.fileauthentication.util.HashSaltUtil;
-import com.hivemq.spi.aop.cache.Cached;
 import com.hivemq.spi.callback.CallbackPriority;
-import com.hivemq.spi.callback.exception.AuthenticationException;
 import com.hivemq.spi.callback.security.OnAuthenticationCallback;
 import com.hivemq.spi.security.ClientCredentialsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 public class FileAuthenticator implements OnAuthenticationCallback {
 
     private static final Logger log = LoggerFactory.getLogger(FileAuthenticator.class);
-
     private Configuration configurations;
 
     private boolean isHashed;
@@ -51,7 +53,10 @@ public class FileAuthenticator implements OnAuthenticationCallback {
     private String separationChar;
     private String algorithm;
     private int iterations;
+    private int cachingTimeInSeconds;
+    private int cacheSize;
 
+    private LoadingCache<ClientCredentialWrapper, Boolean> cache;
     private PasswordComparator passwordComparator;
 
 
@@ -73,10 +78,48 @@ public class FileAuthenticator implements OnAuthenticationCallback {
             @Override
             public void restart() {
                 loadConfig();
+                changeCache();
             }
         });
 
+        configurations.getCredentialsConfiguration().addCallback(new CredentialChangeCallback() {
+            @Override
+            public void onCredentialChange() {
+                log.debug("Credential cache is invalidated");
+                cache.invalidateAll();
+            }
+        });
+
+        changeCache(); // to initialize Cache
+
+
     }
+
+
+    /**
+     * Can be used to change the settings on the cache after the properties were changed
+     * Pls note that all entries will be removed as a consequence
+     */
+    private void changeCache() {
+
+        this.cache = CacheBuilder.newBuilder()
+                .expireAfterWrite(cachingTimeInSeconds, TimeUnit.SECONDS)
+                .maximumSize(cacheSize)
+                .build(
+                        new CacheLoader<ClientCredentialWrapper, Boolean>() {
+                            @Override
+                            public Boolean load(ClientCredentialWrapper wrap) throws Exception {
+                                return checkCredentialsForCaching(wrap);
+                            }
+                        });
+        
+        if (this.cache != null) {
+            log.info("Cache was changed to new settings: cacheTime:{}, cacheSize:{}", this.cachingTimeInSeconds, this.cacheSize);
+        } else {
+            log.info("Cache created with settings: cacheTime:{}, cacheSize:{}", this.cachingTimeInSeconds, this.cacheSize);
+        }
+    }
+
 
     private void loadConfig() {
         isHashed = configurations.isHashed();
@@ -85,6 +128,8 @@ public class FileAuthenticator implements OnAuthenticationCallback {
         separationChar = configurations.getSeparationChar();
         isSalted = configurations.isSalted();
         isFirst = configurations.isSaltFirst();
+        cachingTimeInSeconds = configurations.getCachingTime();
+        cacheSize = configurations.getCacheSize();
 
         log.debug("File Authentication Configuration:");
         log.debug("hashed: {}", isHashed);
@@ -93,39 +138,54 @@ public class FileAuthenticator implements OnAuthenticationCallback {
         log.debug("iterations: {}", iterations);
         log.debug("algorithm: {}", algorithm);
         log.debug("separationChar: {}", separationChar);
+        log.debug("cachingTimeInSeconds: {}", cachingTimeInSeconds);
+        log.debug("cachingSize: {}", cacheSize);
 
     }
 
 
     /**
-     * Method which checks username/password from credential file against the provided username/password
+     * Method which checks username/password from credential file against the provided username/password using a cache
      *
      * @param clientCredentialsData holds all data about the connecting client
      * @return true, if the credentials are ok, false otherwise.
-     * @throws AuthenticationException
      */
     @Override
-    @Cached(timeToLive = 5, timeUnit = TimeUnit.MINUTES)
-    public Boolean checkCredentials(final ClientCredentialsData clientCredentialsData) throws AuthenticationException {
+    public Boolean checkCredentials(final ClientCredentialsData clientCredentialsData) {
+        try {
+            return this.cache.get(new ClientCredentialWrapper(clientCredentialsData));
+        } catch (ExecutionException e) {
+            log.error("Unable to load from Cache", e);
+            return false;
+        }
+    }
 
+    /**
+     * Method which checks username/password from credential file against the provided username/password, it is used by
+     * the load method of the cache, if entry is absent
+     *
+     * @param clientCredentialsDataWrap holds all data about the connecting client
+     * @return true, if the credentials are ok, false otherwise
+     */
+    private Boolean checkCredentialsForCaching(final ClientCredentialWrapper clientCredentialsDataWrap) {
         log.trace("Checking user name and password for client with IP {}, client identifier '{}' and username '{}'",
-                clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                clientCredentialsData.getClientId(), clientCredentialsData.getUsername().or("NONE"));
-        final Optional<String> usernameOptional = clientCredentialsData.getUsername();
-        final Optional<String> passwordOptional = clientCredentialsData.getPassword();
+                clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                clientCredentialsDataWrap.getClientId(), clientCredentialsDataWrap.getUsername().or("NONE"));
+        final Optional<String> usernameOptional = clientCredentialsDataWrap.getUsername();
+        final Optional<String> passwordOptional = clientCredentialsDataWrap.getPassword();
 
         if (!usernameOptional.isPresent()) {
             log.debug("No username is present for client with IP {} and client identifier '{}'. Denying access.",
-                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                    clientCredentialsData.getClientId());
+                    clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsDataWrap.getClientId());
 
             return false;
         }
 
         if (!passwordOptional.isPresent()) {
             log.debug("No password is present for client with IP {}, client identifier '{}' and username '{}'. Denying access.",
-                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                    clientCredentialsData.getClientId(), clientCredentialsData.getUsername().or("NONE"));
+                    clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsDataWrap.getClientId(), clientCredentialsDataWrap.getUsername().or("NONE"));
 
             return false;
         }
@@ -147,16 +207,16 @@ public class FileAuthenticator implements OnAuthenticationCallback {
             if (!isHashed) {
                 final boolean granted = passwordComparator.validatePlaintextPassword(hashedPassword, password);
                 log.debug("Plaintext password validation for client with IP {}, client identifier '{}' and username '{}' was {}.",
-                        clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                        clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+                        clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                        clientCredentialsDataWrap.getClientId(), username, granted ? "successful" : "not successful");
                 return granted;
             }
 
             if (!isSalted) {
                 final boolean granted = passwordComparator.validateHashedPassword(algorithm, password, hashedPassword, iterations);
                 log.debug("Hashed password validation (without salt) for client with IP {}, client identifier '{}' and username '{}' was {}.",
-                        clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                        clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+                        clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                        clientCredentialsDataWrap.getClientId(), username, granted ? "successful" : "not successful");
                 return granted;
             }
 
@@ -175,8 +235,8 @@ public class FileAuthenticator implements OnAuthenticationCallback {
                     hashedSaltedPassword.getSalt());
 
             log.debug("Hashed password validation (with salt) for client with IP {}, client identifier '{}' and username '{}' was {}.",
-                    clientCredentialsData.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
-                    clientCredentialsData.getClientId(), username, granted ? "successful" : "not successful");
+                    clientCredentialsDataWrap.getInetAddress().or(InetAddress.getLoopbackAddress()).getHostAddress(),
+                    clientCredentialsDataWrap.getClientId(), username, granted ? "successful" : "not successful");
             return granted;
         } else {
             return false;
@@ -208,4 +268,71 @@ public class FileAuthenticator implements OnAuthenticationCallback {
     public int priority() {
         return CallbackPriority.HIGH;
     }
+
+
+    /**
+     * this is a wrapper-class for the ClientCredential
+     * it is essentiell because the guave Cache used or caching needs a correct implemented version of equals and hasCode to work
+     */
+    private final static class ClientCredentialWrapper {
+
+
+        private final Optional<InetAddress> inetAddress;
+        private final Optional<String> password;
+        private final String clientId;
+        private final Optional<String> username;
+
+
+        private ClientCredentialWrapper(ClientCredentialsData clientCredentialsData) {
+            inetAddress = clientCredentialsData.getInetAddress();
+            password = clientCredentialsData.getPassword();
+            clientId = clientCredentialsData.getClientId();
+            username = clientCredentialsData.getUsername();
+        }
+
+
+        /**
+         * BEWARE equality is only based on Username and Password!
+         *
+         * @param o the object to be compared with
+         * @return true if username and password are equal AND both not null
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ClientCredentialWrapper that = (ClientCredentialWrapper) o;
+
+            if (!this.getUsername().isPresent()) return false;
+            if (!that.getUsername().isPresent()) return false;
+            if (!this.getPassword().isPresent()) return false;
+            if (!that.getPassword().isPresent()) return false;
+
+            if (!this.getUsername().get().equals(that.getUsername().get()))
+                return false;
+            if (!this.getPassword().get().equals(that.getPassword().get()))
+                return false;
+
+            return true;
+        }
+
+        Optional<InetAddress> getInetAddress() {
+            return inetAddress;
+        }
+
+        Optional<String> getPassword() {
+            return password;
+        }
+
+        String getClientId() {
+            return clientId;
+        }
+
+        Optional<String> getUsername() {
+            return username;
+        }
+    }
+
+
 }

@@ -23,7 +23,6 @@ import com.hivemq.spi.annotations.NotNull;
 import com.hivemq.spi.config.SystemInformation;
 import com.hivemq.spi.services.PluginExecutorService;
 import com.hivemq.spi.services.configuration.ValueChangedCallback;
-import com.hivemq.spi.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,7 @@ public abstract class ReloadingPropertiesReader {
 
     public void init() {
 
-        this.file = new File(systemInformation.getConfigFolder(),getFilename());
+        this.file = new File(systemInformation.getConfigFolder(), getFilename());
 
         try {
             properties = new Properties();
@@ -90,10 +89,20 @@ public abstract class ReloadingPropertiesReader {
 
             Map<String, String> newValues = getCurrentValues();
             logChanges(oldValues, newValues);
+            afterReload();
 
         } catch (IOException e) {
             log.debug("Not able to reload configuration file {}", this.file.getAbsolutePath());
         }
+    }
+
+
+    /**
+     * can be overwritten to perform operations after the reload of the properties file
+     * it is not abstract to not force implementing it in extended classes
+     */
+    void afterReload() {
+
     }
 
     public void replaceProperties(final FileReader fileReader) throws IOException {
@@ -138,12 +147,23 @@ public abstract class ReloadingPropertiesReader {
             }
         }
 
+
         for (Map.Entry<String, String> stringStringEntry : difference.entriesOnlyOnLeft().entrySet()) {
             log.debug("Plugin configuration {} removed", stringStringEntry.getKey(), stringStringEntry.getValue());
+            if (callbacks.containsKey(stringStringEntry.getKey())) {
+                for (ValueChangedCallback<String> callback : callbacks.get(stringStringEntry.getKey())) {
+                    callback.valueChanged(properties.getProperty(stringStringEntry.getValue()));
+                }
+            }
         }
 
         for (Map.Entry<String, String> stringStringEntry : difference.entriesOnlyOnRight().entrySet()) {
-            log.debug("Plugin configuration {} added: {}", stringStringEntry.getValue(), stringStringEntry.getValue());
+            log.debug("Plugin configuration {} added: {}", stringStringEntry.getKey(), stringStringEntry.getValue());
+            if (callbacks.containsKey(stringStringEntry.getKey())) {
+                for (ValueChangedCallback<String> callback : callbacks.get(stringStringEntry.getKey())) {
+                    callback.valueChanged(stringStringEntry.getValue());
+                }
+            }
         }
     }
 
