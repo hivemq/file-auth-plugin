@@ -109,7 +109,7 @@ public class Configuration extends ReloadingPropertiesReader {
             credentialsConfiguration = new CredentialsConfiguration(pluginExecutorService, getCredentialsFilename(), getReloadInterval(),systemInformation);
             credentialsConfiguration.init();
         } else {
-            throw new ConfigurationFileNotFoundException("Credentials file " + filename.get() + " was not found in plugin folder:" + systemInformation.getPluginFolder().getAbsolutePath());
+            throw new ConfigurationFileNotFoundException("Credentials file " + filename.get() + " was not found in plugin folder:" + systemInformation.getConfigFolder().getAbsolutePath());
         }
     }
 
