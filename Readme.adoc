@@ -111,3 +111,12 @@ passwordHashingSalt.isFirst=true
 After having copied this configuration into the +fileAuthConfiguration.properties+, the credential file has to be improved, too. Now as hashing and salting is enabled the passwords have to be stored in same format.
 
 This can be done easily with our provided utility. For more information see the https://github.com/hivemq/file-auth-plugin-utility[GitHub repo].
+
+= Contributing
+
+If you want to contribute to HiveMQ File Auth Plugin, see the link:CONTRIBUTING.md[contribution guidelines].
+
+= License
+
+HiveMQ File Auth Plugin is licensed under the `APACHE LICENSE, VERSION 2.0`. A copy of the license can be found link:LICENSE.txt[here].
+
